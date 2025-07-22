@@ -2,7 +2,7 @@
 
 Video Duplicate Finder is a cross-platform GUI tool developed in Python 3, designed to identify duplicated video files by analyzing visual similarity. Unlike conventional duplicate detection methods that rely on file hashes or metadata, this software employs image-based comparison algorithms to detect duplicates even when framerate, resolution parameters differ. Leveraging Python’s platform-independent architecture, the software is fully compatible with Windows, Linux, and macOS.
 
-# GUI Demo
+# GUI
 
 TODO: URL of image
 
@@ -14,7 +14,7 @@ TODO: URL of image
 
 # A Word on Tkinter
 
-Tkinter is included with most standard Linux, Microsoft Windows and macOS installs of Python, if your distribution doesn't have it you need to install it.
+Tkinter is included with most standard installs of Python on Linux, Microsoft Windows and macOS, if your distribution doesn't have it you need to install it.
 
 You can either run:
 
@@ -70,6 +70,13 @@ Similar videos share some similar properties:
 3) Visually similar screenshots on specific time points.
 
 This tool will capture screenshots and group similar videos, order them by resolution (desc).
+
+# Tools
+
+- `ffmpeg` + `ffprobe`: extract video meta info and do screenshots
+- `Pillow`: PIL library to process images.
+- `imagehash`: Algorithm to decide image similarities.
+
 
 # Buy Me a Coffee
 
