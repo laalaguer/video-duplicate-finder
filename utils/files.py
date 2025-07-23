@@ -23,6 +23,22 @@ VIDEO_FILE_SUFFIXES = [
     '.wmv'
 ]
 
+def silent_remove(path: Union[Path, str]) -> None:
+    '''Remove a file silently without raising errors for permissions, not found, etc.
+    
+    Args:
+        path: Path to file to remove (Path object or string)
+        
+    Returns:
+        None in all cases
+    '''
+    try:
+        path = Path(path) if not isinstance(path, Path) else path
+        path.unlink()
+    except (FileNotFoundError, PermissionError, OSError, IsADirectoryError):
+        pass
+
+
 def _is_hidden(path: Path) -> bool:
     '''Check if a file/folder is hidden (works on Windows, Linux, Mac)'''
     if os.name == 'nt':  # Windows
@@ -43,14 +59,14 @@ def _is_readonly_folder(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_readonly_folder: bool = True, recursive: bool = True) -> Set[Path]:
+def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_readonly_folder:bool = True, recursive: bool = True) -> Set[Path]:
     '''
     Scan for video files in the specified folder.
     
     Args:
         folder_path: Path to scan
         ignore_hidden: Whether to ignore hidden files/folders
-        ignore_readonly_folder: Whether to ignore read-only folders
+        ignore_readonly_folder: Whether to ignore immediate child videos of read-only folders (since we cannot delete them)
         recursive: Whether to scan recursively
         
     Returns:
@@ -64,17 +80,14 @@ def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_reado
             for item in current_folder.iterdir():
                 if ignore_hidden and _is_hidden(item):
                     continue
-                    
-                if item.is_file():
-                    if item.suffix.lower() in VIDEO_FILE_SUFFIXES:
-                        video_files.add(item)
-                elif item.is_dir() and recursive:
-                    if ignore_readonly_folder and _is_readonly_folder(item):
-                        # Only skip files directly in this folder, but still scan subfolders
-                        _scan(item)
-                    else:
-                        _scan(item)
-        
+
+                if item.is_file() and item.suffix.lower() in VIDEO_FILE_SUFFIXES:
+                    if ignore_readonly_folder and _is_readonly_folder(current_folder):
+                        continue
+                    video_files.add(item)
+                
+                if item.is_dir() and recursive:
+                    _scan(item)
         except (PermissionError, OSError):
             pass
             

@@ -7,7 +7,7 @@ def seconds_to_str(total_seconds: int) -> str:
     return time_formatted
 
 def size_to_str(total_bytes: int) -> str:
-    ''' Covert bytes into string representation of MB/Gb/TB format'''
+    ''' Covert bytes into string representation of B/KB/MB/Gb/TB format'''
     one_kb = 1024
     one_mb = one_kb * 1024
     one_gb = one_mb * 1024
