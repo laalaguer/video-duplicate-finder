@@ -9,36 +9,13 @@ from typing import List
 from utils.files import scan
 from utils.ffprobe import get_video_info
 from utils.helpers import size_to_str, seconds_to_str
+from utils.video_object import VideoObject
 
 WINDOW_WIDTH = 900
 WINDOW_HEIGHT = 800
 PATH_FRAME_WIDTH = 250
 MAX_PATH_WIDTH = 240
 THUMBNAIL_WIDTH = 100  # Width in pixels for thumbnails
-
-class VideoObject:
-    """Represents a video file with metadata and screenshots"""
-    
-    def __init__(
-        self,
-        file_path: Path,
-        screenshots: List[Path] = None,
-        width: int = 0,
-        height: int = 0,
-        duration: int = 0,
-        size: int = 0,
-        fps: int = 0,
-        codec: str = ""
-    ):
-        self.file_path = file_path
-        self.screenshots = screenshots or []
-        self.width = width
-        self.height = height
-        self.duration = duration
-        self.size = size
-        self.fps = fps
-        self.codec = codec
-
 
 def _nil_image(max_width: int):
     placeholder = Image.new('RGB', (max_width or THUMBNAIL_WIDTH, 100), color='gray')
@@ -169,9 +146,10 @@ class DuplicateVideoFinder:
                     width, height, duration, size, fps, codec = get_video_info(str(video_path))
                     video_obj = VideoObject(
                         file_path=video_path,
+                        screenshots=None,
                         width=width,
                         height=height,
-                        duration=duration,
+                        duration=int(duration),
                         size=size,
                         fps=int(fps),
                         codec=codec
