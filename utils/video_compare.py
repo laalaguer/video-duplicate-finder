@@ -6,7 +6,7 @@
 '''
 from typing import List
 from pathlib import Path
-from .images import HashableImage, is_identical_img
+from .images import HashableImage, is_identical_img, is_similar_img
 from .safe_counter import SafeCounter
 
 
@@ -23,9 +23,12 @@ class VideoComparisonObject:
 
 def visual_compare_video(a: VideoComparisonObject, b: VideoComparisonObject) -> bool:
     ''' visually compare videos (based on screenshots) '''
+    if len(a.hashed_imgs) == 0 or len(b.hashed_imgs) == 0:
+        return False
+
     same_flags = []
     for x, y in zip(a.hashed_imgs, b.hashed_imgs):
-        same_flags.append(is_identical_img(x, y))
+        same_flags.append(is_similar_img(x, y))
     
     return all(same_flags)
 
