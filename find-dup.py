@@ -17,7 +17,7 @@ def main():
 
     args = parser.parse_args()
 
-    # Verify path exists
+    # Verify user provided path exists
     path = Path(args.folder_path)
     if not path.exists():
         print(f"Error: Path does not exist: {args.folder_path}")

@@ -81,8 +81,15 @@ def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_reado
                 if ignore_hidden and _is_hidden(item):
                     continue
 
+                # If current_folder is set to 'readonly',
+                # On Unix/Linux systems:
+                # if no execute permission (no x) on dir, child_file.is_file() will FAIL with PermissionError
+                # because: it needs execute permission on dir to access child file's metadata.
+                # (in other words, it needs execute perssion to access dir's contents)
+                # On Windows:
+                # child_file.is_file() will succeed.
                 if item.is_file() and item.suffix.lower() in VIDEO_FILE_SUFFIXES:
-                    if ignore_readonly_folder and _is_readonly_folder(current_folder):
+                    if ignore_readonly_folder and _is_readonly_folder(item.parent):
                         continue
                     video_files.add(item)
                 
