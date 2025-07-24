@@ -5,6 +5,8 @@ def screenshot(v_file:str, output_jpg_path:str, timestamp="01:00"):
     ''' Take one screenshot at specific timestamp as jpg'''
     command = [
         "ffmpeg",
+        "-hide_banner",
+        "-loglevel", "error",
         "-ss", timestamp,
         "-i", v_file,
         "-vf", "scale=iw*sar:ih",  # Preserve aspect ratio

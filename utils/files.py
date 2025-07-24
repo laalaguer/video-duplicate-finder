@@ -1,8 +1,9 @@
 ''' file system related functions (Windows, Mac, Linux) '''
 
 import os
+import re
 from pathlib import Path
-from typing import Set, Union
+from typing import Set, Union, List
 
 VIDEO_FILE_SUFFIXES = [
     '.asf',
@@ -22,6 +23,38 @@ VIDEO_FILE_SUFFIXES = [
     '.webm',
     '.wmv'
 ]
+
+def atoi(text: str):
+    ''' convert text to int, if failed then return text itself '''
+    return int(text) if text.isdigit() else text
+
+
+def natural_keys(text: str):
+    ''' Given a string, chop it into a list.
+        All the numbers will be turned to int.
+        Text remains text。
+    '''
+    return [atoi(c) for c in re.split(r'(\d+)', text)]
+
+def sort_path_naturally(paths: List[Path]) -> List[Path]:
+    ''' Return the paths with natural sorting by whole path, section by section, excluding suffix '''
+    aparted_paths = []
+    for p in paths:
+        # Chop path into sections by OS separator
+        sections = list(Path(p).parts)
+        if sections:
+            # For the last section (filename), remove suffix
+            filename = sections[-1]
+            stem = Path(filename).stem
+            sections[-1] = stem
+        # For each section, generate natural_keys()
+        keys = []
+        for section in sections:
+            keys.extend(natural_keys(section))
+        aparted_paths.append(keys)
+    to_be_sorted = list(zip(aparted_paths, paths))
+    sorted_list = sorted(to_be_sorted, key=lambda x: x[0])
+    return [x[1] for x in sorted_list]
 
 def silent_remove(path: Union[Path, str]) -> None:
     '''Remove a file silently without raising errors for permissions, not found, etc.

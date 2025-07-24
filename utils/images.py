@@ -3,17 +3,21 @@ from pathlib import Path
 from PIL import Image as PILImage
 import imagehash
 
-HASH_SIZE = 64
-IDENTICAL_THRESHOLD = 5 # nearly identical in 64 bits
-SIMILAR_THRESHOLD = 10 # visually similar in 64 bits
+# HASH_SIZE = 64
+# IDENTICAL_THRESHOLD = 6 # nearly identical in 64 bits
+# SIMILAR_THRESHOLD = 12 # visually similar in 64 bits
+
+HASH_SIZE = 8
+IDENTICAL_THRESHOLD = 1 # nearly identical in 8 bits
+SIMILAR_THRESHOLD = 2 # visually similar in 8 bits
 
 def _func_factory():
     ''' Function factory for imagehash '''
     def _ahash(img: PILImage.Image) -> imagehash.ImageHash:
-        return imagehash.average_hash(img, hash_size=64)
+        return imagehash.average_hash(img, hash_size=HASH_SIZE)
     
     def _phash(img: PILImage.Image) -> imagehash.ImageHash:
-        return imagehash.phash(img, hash_size=64)
+        return imagehash.phash(img, hash_size=HASH_SIZE)
     
     # def _dhash(img: PILImage.Image) -> imagehash.ImageHash:
     #     return imagehash.dhash(img, hash_size=64)

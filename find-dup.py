@@ -4,7 +4,7 @@ import argparse
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from utils.files import scan
+from utils.files import scan, sort_path_naturally
 from utils.ffprobe import get_video_info
 from utils.ffmpeg import screenshot
 from utils.helpers import seconds_to_str
@@ -110,18 +110,25 @@ def main():
     # Sort the filtered videos
     sorted_videos = sort_videos(filtered_videos)
 
-    # Print grouped video results
-    print("\nDuplicate Video Groups:")
-    current_group = None
+    # Group videos by group_number
+    grouped_videos = {}
     for video in sorted_videos:
-        if video.group_number != current_group:
-            current_group = video.group_number
-            print(f"\nGroup {current_group}:")
-        
-        # Get original video object with metadata
-        video_obj = video_objects[video.file_path]
-        duration_str = seconds_to_str(video_obj['duration'])
-        print(f"  - {video.file_path} [{video_obj['width']}x{video_obj['height']}, {video_obj['fps']} fps, {video_obj['codec']}, {duration_str}]")
+        if video.group_number not in grouped_videos:
+            grouped_videos[video.group_number] = []
+        grouped_videos[video.group_number].append(video.file_path)
+
+    # Sort each group's videos naturally
+    for group in grouped_videos:
+        grouped_videos[group] = sort_path_naturally(grouped_videos[group])
+
+    # Print grouped video results in ascending order
+    print("\nDuplicate Video Groups:")
+    for group_num in sorted(grouped_videos.keys()):
+        print(f"\nGroup {group_num}:")
+        for video_path in grouped_videos[group_num]:
+            video_obj = video_objects[video_path]
+            duration_str = seconds_to_str(video_obj['duration'])
+            print(f"  - {video_path} [{video_obj['width']}x{video_obj['height']}, {video_obj['fps']} fps, {video_obj['codec']}, {duration_str}]")
 
 if __name__ == '__main__':
     main()
