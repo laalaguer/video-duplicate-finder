@@ -201,6 +201,10 @@ def main():
         # Create root window first (hidden)
         root = tk.Tk()
         root.withdraw()
+        
+        # Set window icon
+        icon = ImageTk.PhotoImage(file="logo.png")
+        root.iconphoto(True, icon)
 
     # Create a temp dir to host screenshots of videos
     temp_dir = TemporaryDirectory()
@@ -316,7 +320,7 @@ def main():
                 )
             
             # Wait for user input before next group
-            input("\nPress Enter to continue to the next group...")
+            input("\nPress Enter to continue to the next group...\n")
 
 if __name__ == '__main__':
     main()
