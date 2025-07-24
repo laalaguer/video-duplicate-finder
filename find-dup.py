@@ -296,6 +296,8 @@ def main():
             grouped_videos[video.group_number] = []
         grouped_videos[video.group_number].append(video.file_path)
 
+    print(f"\nTotal Groups: {len(grouped_videos.keys())}")
+
     # Sort each group's videos naturally
     for group in grouped_videos:
         grouped_videos[group] = sort_path_naturally(grouped_videos[group])

@@ -6,7 +6,7 @@
 '''
 from typing import List
 from pathlib import Path
-from .images import HashableImage, is_identical_img, is_similar_img
+from .images import HashableImage, is_similar_img
 from .safe_counter import SafeCounter
 
 
