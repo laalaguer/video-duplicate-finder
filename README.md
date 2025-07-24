@@ -3,7 +3,7 @@
 <img src="./logo.png" width="192">
 
 
-**Video Duplicate Finder** is an open source tool developed in Python 3, designed to identify duplicated video files by analyzing visual similarity. Unlike conventional duplicate detection methods that rely on file hashes or metadata, this software employs image-based comparison algorithms to detect duplicates even when framerate, resolution parameters differ. Leveraging Python’s platform-independent architecture, the software is fully compatible with Windows, Linux, and macOS.
+**Video Duplicate Finder** is an open source tool developed in Python 3, designed to identify duplicated video files by analyzing visual similarity. Unlike conventional duplicate detection methods that rely on file hashes or metadata, this software employs image-based comparison algorithms to detect duplicates even when the framerate, resolution parameters differ. Leveraging Python’s platform-independent architecture, the software is fully compatible with Windows, Linux, and macOS.
 
 # GUI
 
@@ -11,7 +11,7 @@
 
 # Dependency
 
-1) `ffmpeg` and `ffprobe` binary shall be presented on your system.
+1) `ffmpeg` and `ffprobe` binaries shall be present on your system.
 2) Python 3 (>=3.10 preferred)
 3) `tkinter` for Python GUI. (run `python3 is-tkinter-installed.py` to check)
 
@@ -36,7 +36,7 @@ If you see `ModuleNotFoundError: No module named 'tkinter'`, it’s missing.
 
 # Install
 
-Use Python virtual env to install the dependency in seclusion.
+Use Python virtual env to install the dependencies in isolation.
 
 ```bash
 # Install
@@ -54,7 +54,7 @@ make dep
 
 # Use
 
-If your `ffmpeg` and `ffprobe` is in the common system path and can be found by Python, just run:
+If `ffmpeg` and `ffprobe` are in the common system path and can be found by Python, just run:
 
 ```bash
 # Use
@@ -81,6 +81,6 @@ This tool will capture screenshots and group similar videos, order them by resol
 
 # Buy Me a Coffee
 
-No, I am kidding. With the help of AI to do the interface it took me only 1.5 days to finish it.
+No, I am kidding. With AI's help for the GUI interface, it took me only 1.5 days to finish it.
 
 Feel free to use, update and fork the software.
