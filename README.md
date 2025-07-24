@@ -54,13 +54,17 @@ make dep
 
 # Use
 
-If `ffmpeg` and `ffprobe` are in the common system path and can be found by Python, just run:
-
 ```bash
 # Use
 cd video-duplicate-finder/
 source .env/bin/activate
-python3 ./find-dup.py
+python3 find-dup.py --interactive /path/to/your/video/folder
+```
+
+or if you prefer just preview the duplicates:
+
+```bash
+python3 find-dup.py /path/to/your/video/folder
 ```
  
 # Methodology
