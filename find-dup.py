@@ -101,6 +101,43 @@ def show_group_window(group_num, video_paths, video_objects, video_thumbs):
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
     
+    # Enable middle-click drag scrolling
+    def start_scroll(event):
+        canvas.scan_mark(event.x, event.y)
+    
+    def move_scroll(event):
+        canvas.scan_dragto(event.x, event.y, gain=1)
+    
+    scrollable_frame.bind("<ButtonPress-2>", start_scroll)
+    scrollable_frame.bind("<B2-Motion>", move_scroll)
+    
+    def _on_mousewheel(event):
+        """Handle mouse wheel events for scrolling"""
+        if event.num == 5 or event.delta == -120:  # Scroll down
+            canvas.yview_scroll(1, "units")
+        elif event.num == 4 or event.delta == 120:  # Scroll up
+            canvas.yview_scroll(-1, "units")
+    
+    # Bind mouse wheel for all platforms
+    canvas.bind("<MouseWheel>", _on_mousewheel)
+    canvas.bind("<Button-4>", _on_mousewheel)  # Linux scroll up
+    canvas.bind("<Button-5>", _on_mousewheel)  # Linux scroll down
+    scrollable_frame.bind("<MouseWheel>", _on_mousewheel)
+    scrollable_frame.bind("<Button-4>", _on_mousewheel)
+    scrollable_frame.bind("<Button-5>", _on_mousewheel)
+    
+    # Clean up bindings when window closes
+    def _on_close():
+        canvas.unbind("<MouseWheel>")
+        canvas.unbind("<Button-4>")
+        canvas.unbind("<Button-5>")
+        scrollable_frame.unbind("<MouseWheel>")
+        scrollable_frame.unbind("<Button-4>")
+        scrollable_frame.unbind("<Button-5>")
+        window.destroy()
+    
+    window.protocol("WM_DELETE_WINDOW", _on_close)
+    
     # Pack widgets
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
