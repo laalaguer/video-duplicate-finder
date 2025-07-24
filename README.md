@@ -85,6 +85,6 @@ This tool will capture screenshots and group similar videos, order them by resol
 
 # Buy Me a Coffee
 
-No, I am kidding. With AI's help for the GUI interface, it took me only 1.5 days to finish it.
+No, I am kidding. With AI's help for the GUI interface, it took me only 1.5 days to finish the initial release version.
 
 Feel free to use, update and fork the software.
