@@ -15,54 +15,105 @@ from utils.safe_counter import SafeCounter
 from PIL import ImageTk
 import tkinter as tk
 
-def open_img_window(video_object, images):
-    # Create window
+class VideoDisplayComponent(tk.Frame):
+    def __init__(self, parent, video_object, images):
+        super().__init__(parent, borderwidth=2, relief="groove", padx=10, pady=10)
+        
+        # Configure grid layout
+        self.columnconfigure(0, weight=1)  # Images column
+        self.columnconfigure(1, weight=1)  # Path column
+        self.columnconfigure(2, weight=1)  # Info column
+        self.columnconfigure(3, weight=1)  # Button column
+        
+        # First column - images
+        img_frame = tk.Frame(self)
+        img_frame.grid(row=0, column=0, sticky="nsew", padx=5)
+        
+        # Display up to 3 images side by side
+        for i, img in enumerate(images[:3]):
+            photo = ImageTk.PhotoImage(img)
+            label = tk.Label(img_frame, image=photo)
+            label.image = photo  # Keep reference
+            label.pack(side=tk.LEFT, padx=5)
+        
+        # Second column - file path (with wrapping)
+        path_frame = tk.Frame(self)
+        path_frame.grid(row=0, column=1, sticky="nsew", padx=5)
+        
+        path_label = tk.Label(
+            path_frame,
+            text=str(video_object.file_path),
+            wraplength=200,
+            justify="left"
+        )
+        path_label.pack(fill="both", expand=True)
+        
+        # Third column - video info
+        info_frame = tk.Frame(self)
+        info_frame.grid(row=0, column=2, sticky="nsew", padx=5)
+        
+        info_labels = [
+            f"{video_object.width}x{video_object.height}",
+            f"Duration: {seconds_to_str(video_object.duration)}",
+            f"Size: {size_to_str(video_object.size)}",
+            f"Codec: {video_object.codec}",
+            f"FPS: {video_object.fps}"
+        ]
+        
+        for text in info_labels:
+            label = tk.Label(info_frame, text=text)
+            label.pack(anchor="w")
+        
+        # Fourth column - delete button
+        button_frame = tk.Frame(self)
+        button_frame.grid(row=0, column=3, sticky="nsew", padx=5)
+        
+        def delete_and_close():
+            from utils.files import silent_remove
+            silent_remove(video_object.file_path)
+            delete_btn.config(state=tk.DISABLED, relief=tk.SUNKEN)
+        
+        delete_btn = tk.Button(
+            button_frame,
+            text="Delete",
+            command=delete_and_close
+        )
+        delete_btn.pack()
+
+def show_group_window(group_num, video_paths, video_objects, video_thumbs):
+    """Show a scrollable window with all videos in a group"""
     window = tk.Toplevel()
-    window.title(video_object.file_path.name)
+    window.title(f"Group {group_num}")
+    window.minsize(850, 800)  # Set minimum width to accommodate all components
     
-    # First row - images
-    img_frame = tk.Frame(window)
-    img_frame.pack(pady=10)
+    # Create canvas with scrollbar
+    canvas = tk.Canvas(window)
+    scrollbar = tk.Scrollbar(window, orient="vertical", command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
     
-    # Display up to 3 images side by side
-    for i, img in enumerate(images[:3]):
-        photo = ImageTk.PhotoImage(img)
-        label = tk.Label(img_frame, image=photo)
-        label.image = photo  # Keep reference
-        label.pack(side=tk.LEFT, padx=10)
-    
-    # Second row - video info
-    info_frame = tk.Frame(window)
-    info_frame.pack(pady=10)
-    
-    # Stacked video info labels
-    info_labels = [
-        f"{video_object.width}x{video_object.height}",
-        f"Duration: {seconds_to_str(video_object.duration)}",
-        f"Size: {size_to_str(video_object.size)}",
-        f"Codec: {video_object.codec}",
-        f"FPS: {video_object.fps}"
-    ]
-    
-    for text in info_labels:
-        label = tk.Label(info_frame, text=text)
-        label.pack()
-    
-    # Third row - delete button
-    button_frame = tk.Frame(window)
-    button_frame.pack(pady=10)
-    
-    def delete_and_close():
-        from utils.files import silent_remove
-        silent_remove(video_object.file_path)
-        window.after(1000, window.destroy)  # Close after 1 second
-    
-    delete_btn = tk.Button(
-        button_frame,
-        text="Delete",
-        command=delete_and_close
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(
+            scrollregion=canvas.bbox("all")
+        )
     )
-    delete_btn.pack()
+    
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+    
+    # Pack widgets
+    canvas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+    
+    # Add video components
+    for video_path in video_paths:
+        if video_path in video_thumbs and video_thumbs[video_path]:
+            component = VideoDisplayComponent(
+                scrollable_frame,
+                video_objects[video_path],
+                video_thumbs[video_path]
+            )
+            component.pack(fill="x", padx=10, pady=5)
     
     return window
 
@@ -203,13 +254,17 @@ def main():
             print(f"  - {video_path} [{video_obj.width}x{video_obj.height}, {video_obj.fps} fps, {video_obj.codec}, {duration_str}]")
         
         if args.interactive:
-            # Show thumbnails for first video in group
-            for video_path_2 in grouped_videos[group_num]:
-                if video_path_2 in video_thumbs and video_thumbs[video_path_2]:
-                    open_img_window(video_objects[video_path_2], video_thumbs[video_path_2])
+            # Show all videos in group in scrollable window
+            if grouped_videos[group_num]:
+                show_group_window(
+                    group_num,
+                    grouped_videos[group_num],
+                    video_objects,
+                    video_thumbs
+                )
             
-        # Wait for user input before next group
-        input("\nPress Enter to continue to next group...")
+            # Wait for user input before next group
+            input("\nPress Enter to continue to next group...")
 
 if __name__ == '__main__':
     main()
