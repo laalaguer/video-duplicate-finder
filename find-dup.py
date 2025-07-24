@@ -2,9 +2,11 @@
 
 import argparse
 import sys
+import platform
+import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from utils.files import scan, sort_path_naturally
+from utils.files import scan, sort_path_naturally, safe_remove
 from utils.ffprobe import get_video_info
 from utils.ffmpeg import screenshot
 from utils.helpers import seconds_to_str, size_to_str
@@ -40,13 +42,27 @@ class VideoDisplayComponent(tk.Frame):
         path_frame = tk.Frame(self)
         path_frame.grid(row=0, column=1, sticky="nsew", padx=5)
         
+        def open_file_location():
+            file_path = video_object.file_path
+            parent = str(file_path.parent)
+            if platform.system() == "Windows":
+                import os
+                os.startfile(parent)
+            elif platform.system() == "Darwin":
+                subprocess.run(["open", "-R", str(file_path)])
+            else:  # Linux
+                subprocess.run(["xdg-open", parent])
+
         path_label = tk.Label(
             path_frame,
             text=str(video_object.file_path),
             wraplength=200,
-            justify="left"
+            justify="left",
+            fg="blue",
+            cursor="hand2"
         )
         path_label.pack(fill="both", expand=True)
+        path_label.bind("<Button-1>", lambda e: open_file_location())
         
         # Third column - video info
         info_frame = tk.Frame(self)
@@ -69,8 +85,7 @@ class VideoDisplayComponent(tk.Frame):
         button_frame.grid(row=0, column=3, sticky="nsew", padx=5)
         
         def delete_and_close():
-            from utils.files import silent_remove
-            silent_remove(video_object.file_path)
+            safe_remove(video_object.file_path)
             delete_btn.config(state=tk.DISABLED, relief=tk.SUNKEN)
         
         delete_btn = tk.Button(
@@ -301,7 +316,7 @@ def main():
                 )
             
             # Wait for user input before next group
-            input("\nPress Enter to continue to next group...")
+            input("\nPress Enter to continue to the next group...")
 
 if __name__ == '__main__':
     main()

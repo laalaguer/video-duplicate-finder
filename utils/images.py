@@ -82,11 +82,11 @@ def is_identical_img(a: HashableImage, b: HashableImage) -> bool:
     return abs(a.get_hash() - b.get_hash()) < IDENTICAL_THRESHOLD
 
 def read_thumb(p: Path, dimension: int = 100) -> Union[None, PILImage.Image]:
-    '''Read and center crop an image to square thumbnail.
+    '''Read and resize an image to thumbnail with specified width.
     
     Args:
         p: Path to image file
-        dimension: Size of square thumbnail (width and height)
+        dimension: Maximum width of thumbnail (height scales proportionally)
         
     Returns:
         PIL.Image or None if error opening/processing file
@@ -98,13 +98,12 @@ def read_thumb(p: Path, dimension: int = 100) -> Union[None, PILImage.Image]:
         
         width, height = img.size
         
-        # Calculate crop box coordinates
-        left = max(0, (width - dimension) // 2)
-        top = max(0, (height - dimension) // 2)
-        right = min(width, left + dimension)
-        bottom = min(height, top + dimension)
+        if width > dimension:
+            # Calculate new height preserving aspect ratio
+            ratio = dimension / width
+            new_height = int(height * ratio)
+            img = img.resize((dimension, new_height))
         
-        # Crop and return the center square
-        return img.crop((left, top, right, bottom))
+        return img
     except Exception:
         return None

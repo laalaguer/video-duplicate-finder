@@ -5,6 +5,12 @@ import re
 from pathlib import Path
 from typing import Set, Union, List
 
+try:
+    from send2trash import send2trash
+    TRASH_SUPPORTED = True
+except ImportError:
+    TRASH_SUPPORTED = False
+
 VIDEO_FILE_SUFFIXES = [
     '.asf',
     '.avi',
@@ -70,6 +76,25 @@ def silent_remove(path: Union[Path, str]) -> None:
         path.unlink()
     except (FileNotFoundError, PermissionError, OSError, IsADirectoryError):
         pass
+
+
+def safe_remove(path: Union[Path, str], use_trash: bool = True) -> None:
+    '''Remove a file, optionally using trash if available
+    
+    Args:
+        path: Path to file to remove (Path object or string)
+        use_trash: Whether to attempt using trash (default: True)
+        
+    Returns:
+        None in all cases
+    '''
+    try:
+        if use_trash and TRASH_SUPPORTED:
+            send2trash(str(path))
+        else:
+            silent_remove(path)
+    except Exception:
+        silent_remove(path)
 
 
 def _is_hidden(path: Path) -> bool:
