@@ -99,7 +99,7 @@ class GroupWindow(wx.Frame):
         top_panel = wx.Panel(self)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.AddStretchSpacer()
-        close_btn = wx.Button(top_panel, label="Close window")
+        close_btn = wx.Button(top_panel, label="Close group")
         close_btn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
         top_sizer.Add(close_btn, 0, wx.ALL|wx.TOP|wx.BOTTOM, 10)
         top_sizer.AddStretchSpacer()
