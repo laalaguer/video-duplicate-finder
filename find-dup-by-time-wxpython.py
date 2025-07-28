@@ -1,4 +1,4 @@
-'''wxPython GUI for finding duplicate videos'''
+'''wxPython GUI for finding duplicate videos by duration only'''
 
 import argparse
 import sys
@@ -13,10 +13,8 @@ from utils.files import scan, sort_path_naturally, safe_remove
 from utils.ffprobe import get_video_info
 from utils.ffmpeg import screenshot
 from utils.helpers import seconds_to_str, size_to_str
-from utils.images import HashableImage, HashComputer, read_thumb
-from utils.video_compare import VideoComparisonObject, mark_groups, sort_videos
+from utils.images import read_thumb
 from utils.video_object import VideoObject
-from utils.safe_counter import SafeCounter
 
 class VideoDisplayPanel(wx.Panel):
     def __init__(self, parent, video_object, images):
@@ -144,8 +142,38 @@ class GroupWindow(wx.Frame):
         self.SetFocus()  # Force focus
         self.RequestUserAttention()  # Ensure window gets attention
 
+def group_videos_by_duration(video_objects):
+    """Group videos by duration, return dict of {duration: [video_paths]}"""
+    duration_groups = {}
+    
+    # Sort videos by duration (longest first)
+    sorted_videos = sorted(
+        video_objects.items(),
+        key=lambda x: x[1].duration,
+        reverse=True
+    )
+    
+    for video_path, video_obj in sorted_videos:
+        duration = video_obj.duration
+        if duration not in duration_groups:
+            duration_groups[duration] = []
+        duration_groups[duration].append(video_path)
+    
+    # Filter out groups with only one video
+    filtered_groups = {
+        duration: paths 
+        for duration, paths in duration_groups.items() 
+        if len(paths) > 1
+    }
+    
+    # Convert to group_number: paths format to match original structure
+    return {
+        i+1: sort_path_naturally(paths)
+        for i, (duration, paths) in enumerate(filtered_groups.items())
+    }
+
 def main():
-    parser = argparse.ArgumentParser(description='Scan for video files')
+    parser = argparse.ArgumentParser(description='Scan for video files by duration')
     parser.add_argument('folder_path', type=str, help='Path to scan for video files')
     parser.add_argument('--no-ignore-hidden', action='store_false', dest='ignore_hidden',
                        help='Include hidden files/folders in scan')
@@ -175,12 +203,8 @@ def main():
 
     # Create video objects map
     video_objects = {}
-    video_comparison_objects = {}
     video_thumbs = {}
 
-    # Image Hash related
-    _computer = HashComputer('ahash')
-    
     try:
         for video_path in video_files:
             # Get video info
@@ -216,47 +240,14 @@ def main():
                     video_obj.screenshots.append(screenshot_path)
             
             video_objects[video_path] = video_obj
-            
-            # Create VideoComparisonObject with hashed screenshots
-            hashed_imgs = []
-            for screenshot_path in video_obj.screenshots:
-                try:
-                    hashed_img = HashableImage(Path(screenshot_path), _computer)
-                    hashed_imgs.append(hashed_img)
-                except Exception as e:
-                    print(f"Error processing screenshot {screenshot_path}: {e}")
-            
-            video_comparison_objects[video_path] = VideoComparisonObject(
-                file_path=video_path,
-                hashed_imgs=hashed_imgs
-            )
 
     finally:
         temp_dir.cleanup()
 
-    # Process video comparisons
-    counter = SafeCounter()
-    video_comparison_list = list(video_comparison_objects.values())
-    grouped_videos = mark_groups(video_comparison_list, counter)
-    
-    # Filter out ungrouped videos (group_number = 0)
-    filtered_videos = [v for v in grouped_videos if v.group_number > 0]
-    
-    # Sort the filtered videos
-    sorted_videos = sort_videos(filtered_videos)
-
-    # Group videos by group_number
-    grouped_videos = {}
-    for video in sorted_videos:
-        if video.group_number not in grouped_videos:
-            grouped_videos[video.group_number] = []
-        grouped_videos[video.group_number].append(video.file_path)
+    # Group videos by duration
+    grouped_videos = group_videos_by_duration(video_objects)
 
     print(f"\nTotal Groups: {len(grouped_videos.keys())}")
-
-    # Sort each group's videos naturally
-    for group in grouped_videos:
-        grouped_videos[group] = sort_path_naturally(grouped_videos[group])
 
     # Create wxPython app
     app = wx.App(False)
