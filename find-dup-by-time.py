@@ -94,11 +94,11 @@ class VideoDisplayComponent(tk.Frame):
         )
         delete_btn.pack()
 
-def show_all_videos_window(video_paths, video_objects, video_thumbs):
-    """Show a scrollable window with all videos sorted by duration"""
+def show_group_window(group_num, video_paths, video_objects, video_thumbs):
+    """Show a scrollable window with all videos in a group"""
     window = tk.Toplevel()
-    window.title("All Videos (Sorted by Duration)")
-    window.minsize(850, 800)
+    window.title(f"Group {group_num}")
+    window.minsize(850, 800)  # Set minimum width to accommodate all components
     
     # Create canvas with scrollbar
     canvas = tk.Canvas(window)
@@ -260,26 +260,55 @@ def main():
         reverse=True
     )
 
+    # Group videos where time difference between consecutive videos is <= 2 seconds
+    grouped_videos = []
+    current_group = []
+    
+    for i in range(len(sorted_videos)):
+        if i == 0:
+            current_group.append(sorted_videos[i])
+            continue
+            
+        prev_diff = abs(sorted_videos[i].duration - sorted_videos[i-1].duration)
+        if prev_diff <= 2:
+            current_group.append(sorted_videos[i])
+        else:
+            if len(current_group) > 1:  # Only keep groups with at least 2 videos
+                grouped_videos.append(current_group)
+            current_group = [sorted_videos[i]]
+    
+    # Add last group if it has multiple videos
+    if len(current_group) > 1:
+        grouped_videos.append(current_group)
+
     # Print all video results
     if not args.interactive:
-        print("\nAll Videos (Sorted by Duration):")
-        for video_obj in sorted_videos:
-            print(f"{seconds_to_str(int(video_obj.duration))} {video_obj.width}x{video_obj.height} {video_obj.fps} {video_obj.codec} {video_obj.file_path}")
+        print("\nVideo Groups (Sorted by Duration):")
+        for group_num, group in enumerate(grouped_videos, 1):
+            print(f"\nGroup {group_num}:")
+            for video_obj in group:
+                print(f"  - {seconds_to_str(int(video_obj.duration))} {video_obj.width}x{video_obj.height} {video_obj.fps} {video_obj.codec} {video_obj.file_path}")
     else:
-        # Show all videos in single scrollable window
-        window = show_all_videos_window(
-            [v.file_path for v in sorted_videos],
-            video_objects,
-            video_thumbs
-        )
+        # Show groups one by one
+        for group_num, group in enumerate(grouped_videos, 1):
+            print(f"\nGroup {group_num}:")
+            for video_obj in group:
+                print(f"  - {seconds_to_str(int(video_obj.duration))} {video_obj.width}x{video_obj.height} {video_obj.fps} {video_obj.codec} {video_obj.file_path}")
+            
+            # Show group in window
+            show_group_window(
+                group_num,
+                [v.file_path for v in group],
+                video_objects,
+                video_thumbs
+            )
+            
+            # Wait for user input before next group
+            input("\nPress Enter to continue to the next group...\n")
         
-        # When main window closes, exit program
-        def on_close():
-            root.quit()
-            root.destroy()
-        
-        window.protocol("WM_DELETE_WINDOW", on_close)
-        root.mainloop()
+        # When done, exit program
+        root.quit()
+        root.destroy()
 
 if __name__ == '__main__':
     main()
