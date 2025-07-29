@@ -24,7 +24,7 @@ VideoDeleteEvent, VIDEO_EVT_DELETE = wx.lib.newevent.NewEvent()
 
 class VideoDisplayPanel(wx.Panel):
     ''' Entry / item for displaying the video images and details '''
-    def __init__(self, parent, video_object, images):
+    def __init__(self, parent, video_object, images, property_diffs=None):
         wx.Panel.__init__(self, parent, style=wx.BORDER_THEME)
         
         self.video_object = video_object
@@ -59,14 +59,18 @@ class VideoDisplayPanel(wx.Panel):
         # Info section (right)
         info_sizer = wx.BoxSizer(wx.VERTICAL)
         info_labels = [
-            f"{video_object.width}x{video_object.height}",
-            f"Duration: {seconds_to_str(video_object.duration)}",
-            f"Size: {size_to_str(video_object.size)}",
-            f"FPS: {video_object.fps}",
-            f"Codec: {video_object.codec}"
+            (f"{video_object.width}x{video_object.height}", 'resolution'),
+            (f"Duration: {seconds_to_str(video_object.duration)}", 'duration'),
+            (f"Size: {size_to_str(video_object.size)}", 'size'),
+            (f"FPS: {video_object.fps}", 'fps'),
+            (f"Codec: {video_object.codec}", 'codec')
         ]
-        for text in info_labels:
+        
+        for text, prop in info_labels:
             label = wx.StaticText(self, label=text)
+            # Highlight in red if this property differs in the group
+            if property_diffs and property_diffs.get(prop, False):
+                label.SetForegroundColour(wx.Colour(255, 0, 0))  # Red
             info_sizer.Add(label, 0, wx.ALL, 2)
         sizer.Add(info_sizer, 0, wx.ALL, 5)
         
@@ -101,6 +105,8 @@ class VideoDisplayPanel(wx.Panel):
 class GroupWindow(wx.Frame):
     ''' A window wrapper for a group of related videos '''
     def __init__(self, group_num, video_paths, video_objects, video_thumbs, total_groups=None, fast_mode=False):
+        # Analyze property differences in the group
+        self.property_diffs = self._analyze_property_differences(video_paths, video_objects)
         title = f"Group {group_num}"
         if fast_mode:
             title += " (fast mode)"
@@ -131,7 +137,8 @@ class GroupWindow(wx.Frame):
                 video_panel = VideoDisplayPanel(
                     scroll_panel,
                     video_objects[video_path],
-                    video_thumbs[video_path]
+                    video_thumbs[video_path],
+                    self.property_diffs
                 )
                 scroll_sizer.Add(video_panel, 0, wx.EXPAND|wx.ALL, 5)
         
@@ -164,6 +171,34 @@ class GroupWindow(wx.Frame):
         self.SetFocus()  # Force focus
         self.RequestUserAttention()  # Ensure window gets attention
     
+    def _analyze_property_differences(self, video_paths, video_objects):
+        """Analyze video properties to find differences within the group"""
+        properties = {
+            'resolution': set(),
+            'duration': set(),
+            'size': set(),
+            'fps': set(),
+            'codec': set()
+        }
+        
+        for path in video_paths:
+            if path in video_objects:
+                video = video_objects[path]
+                properties['resolution'].add(f"{video.width}x{video.height}")
+                properties['duration'].add(video.duration)
+                properties['size'].add(video.size)
+                properties['fps'].add(video.fps)
+                properties['codec'].add(video.codec)
+        
+        # Return which properties have differences
+        return {
+            'resolution': len(properties['resolution']) > 1,
+            'duration': len(properties['duration']) > 1,
+            'size': len(properties['size']) > 1,
+            'fps': len(properties['fps']) > 1,
+            'codec': len(properties['codec']) > 1
+        }
+
     def on_video_deleted(self, event):
         """Handle video deletion events"""
         self.deleted_count += 1
