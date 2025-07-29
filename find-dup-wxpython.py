@@ -4,6 +4,7 @@ import argparse
 import sys
 import platform
 import subprocess
+import wx.lib.newevent
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import wx
@@ -18,11 +19,11 @@ from utils.video_compare import VideoComparisonObject, mark_groups, sort_videos
 from utils.video_object import VideoObject
 from utils.safe_counter import SafeCounter
 
-def generate_random_string(length=7):
-        """Generate a random alphanumeric string of given length"""
-        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+# Custom event for video deletion
+VideoDeleteEvent, VIDEO_EVT_DELETE = wx.lib.newevent.NewEvent()
 
 class VideoDisplayPanel(wx.Panel):
+    ''' Entry / item for displaying the video images and details '''
     def __init__(self, parent, video_object, images):
         wx.Panel.__init__(self, parent, style=wx.BORDER_THEME)
         
@@ -79,6 +80,10 @@ class VideoDisplayPanel(wx.Panel):
     def on_delete(self, event):
         safe_remove(self.video_object.file_path)
         event.GetEventObject().Disable()
+        
+        # Send delete event up to parent window
+        delete_event = VideoDeleteEvent()
+        wx.PostEvent(self.GetParent().GetParent(), delete_event)
 
     def open_file_location(self, file_path):
         """Open file location in system file explorer and focus on file"""
@@ -94,9 +99,12 @@ class VideoDisplayPanel(wx.Panel):
             print(f"Error opening file location: {e}")
 
 class GroupWindow(wx.Frame):
-    def __init__(self, group_num, video_paths, video_objects, video_thumbs, total_groups=None):
-        wx.Frame.__init__(self, None, title=f"Group {group_num}",
-                         size=(850, 800))
+    ''' A window wrapper for a group of related videos '''
+    def __init__(self, group_num, video_paths, video_objects, video_thumbs, total_groups=None, fast_mode=False):
+        title = f"Group {group_num}"
+        if fast_mode:
+            title += " (fast mode)"
+        wx.Frame.__init__(self, None, title=title, size=(850, 800))
         
         # Main sizer for entire window
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -142,11 +150,25 @@ class GroupWindow(wx.Frame):
         bottom_panel.SetSizer(bottom_sizer)
         main_sizer.Add(bottom_panel, 0, wx.EXPAND)
         
+        # Track fast mode and deletion counts
+        self.fast_mode = fast_mode
+        self.total_videos = len(video_paths)
+        self.deleted_count = 0
+        
+        # Bind delete event handler
+        self.Bind(VIDEO_EVT_DELETE, self.on_video_deleted)
+        
         self.SetSizer(main_sizer)
         self.Show()
         self.Raise()  # Bring window to front
         self.SetFocus()  # Force focus
         self.RequestUserAttention()  # Ensure window gets attention
+    
+    def on_video_deleted(self, event):
+        """Handle video deletion events"""
+        self.deleted_count += 1
+        if self.fast_mode and abs(self.total_videos - self.deleted_count) <= 1:
+            self.Close()
 
 def main():
     parser = argparse.ArgumentParser(description='Scan for video files')
@@ -157,6 +179,8 @@ def main():
                        help='Include videos in read-only folders')
     parser.add_argument('--no-recursive', action='store_false', dest='recursive',
                        help='Disable recursive directory scanning')
+    parser.add_argument('--fast-mode', action='store_true',
+                       help='Auto-close group window when all but one videos are marked for deletion')
 
     args = parser.parse_args()
 
@@ -275,7 +299,8 @@ def main():
                 grouped_videos[group_num],
                 video_objects,
                 video_thumbs,
-                total_groups
+                total_groups,
+                args.fast_mode
             )
             app.MainLoop()  # Process events until window closes
 
