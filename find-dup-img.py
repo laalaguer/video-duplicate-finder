@@ -139,19 +139,15 @@ def main():
                 resolution = f"{img_obj.width}x{img_obj.height}"
                 size = format_size(img_obj.size)
                 print(f"  {file_path} ({resolution}, {size} bytes)")
-                json_group.append({
-                    'path': str(file_path),
-                    'resolution': resolution,
-                    'size': img_obj.size
-                })
+                json_group.append(str(file_path))
             
             json_output[group_num] = json_group
 
     # Save to JSON file if requested
     if args.json:
         try:
-            with open(args.json, 'w') as f:
-                json.dump(json_output, f, indent=2)
+            with open(args.json, 'w', encoding='utf-8') as f:
+                json.dump(json_output, f, indent=2, ensure_ascii=False)
             print(f"\nGroup information saved to: {args.json}")
         except Exception as e:
             print(f"Error saving JSON file: {e}")
