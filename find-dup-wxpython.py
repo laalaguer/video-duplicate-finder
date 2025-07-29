@@ -14,7 +14,7 @@ from utils.files import scan, sort_path_naturally, safe_remove
 from utils.ffprobe import get_video_info
 from utils.ffmpeg import screenshot
 from utils.helpers import seconds_to_str, size_to_str, generate_random_string
-from utils.images import HashableImage, HashComputer, read_thumb
+from utils.images import HashableImage, HashComputer, create_thumb
 from utils.video_compare import VideoComparisonObject, mark_groups, sort_videos
 from utils.video_object import VideoObject
 from utils.safe_counter import SafeCounter
@@ -216,6 +216,8 @@ def main():
                        help='Disable recursive directory scanning')
     parser.add_argument('--fast-mode', action='store_true',
                        help='Auto-close group window when all but one videos are marked for deletion')
+    parser.add_argument('--ignore-partial-names', type=str, default='',
+                       help='Comma-separated list of partial names to ignore in file paths')
 
     args = parser.parse_args()
 
@@ -226,11 +228,15 @@ def main():
         sys.exit(1)
 
     # Look for videos
+    # Convert comma-separated ignore names to list
+    ignore_names = [name.strip() for name in args.ignore_partial_names.split(',')] if args.ignore_partial_names else []
+    
     video_files = scan(
         folder_path=args.folder_path,
         ignore_hidden=args.ignore_hidden,
         ignore_readonly_folder=args.ignore_readonly_folder,
-        recursive=args.recursive
+        recursive=args.recursive,
+        ignore_partial_names=ignore_names
     )
 
     # Create a temp dir to host screenshots of videos
@@ -272,7 +278,7 @@ def main():
                     screenshot_path = Path(temp_dir.name) / f"{video_path.stem}_{rand_str}_{sec}s.jpg"
                     screenshot(str(video_path), str(screenshot_path), timestamp_str)
                     
-                    _img_obj = read_thumb(screenshot_path)
+                    _img_obj = create_thumb(screenshot_path)
                     if not video_thumbs.get(video_path, None):
                         video_thumbs[video_path] = []
                     if _img_obj:

@@ -18,3 +18,7 @@ class SafeCounter:
         with self._lock:
             self._value += 1
             return self._value
+    
+    def peek_int(self) -> int:
+        ''' Peek the top of the counter, maybe not accurate '''
+        return self._value

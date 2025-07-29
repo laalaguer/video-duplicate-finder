@@ -59,12 +59,27 @@ class HashableImage:
     ''' Container of {Path, ImageHash} '''
     def __init__(self, path: Path, computer: HashComputer):
         self.path = path
-        self.img = PILImage.open(path)
         self.computer = computer
         try:
-            self.img_hash = computer.compute(self.img)
+            with PILImage.open(path) as img: # optimize, make the image short lived.
+                self.img_hash = computer.compute(img)
         except Exception as e:
             raise Exception(f'Error in hashing image: {str(path)}')
+
+    @classmethod
+    def from_pil_image(cls, path: Path, img: PILImage.Image, computer: HashComputer):
+        '''Create HashableImage from existing PIL Image
+        
+        Args:
+            path: path to the image file
+            img: PIL Image to be hashed
+            computer: HashComputer instance
+        '''
+        instance = cls.__new__(cls)
+        instance.path = path
+        instance.computer = computer
+        instance.img_hash = computer.compute(img)
+        return instance
 
     def get_hash(self):
         return self.img_hash
@@ -81,7 +96,7 @@ def is_identical_img(a: HashableImage, b: HashableImage) -> bool:
     ''' Decide if images are identical '''
     return abs(a.get_hash() - b.get_hash()) < IDENTICAL_THRESHOLD
 
-def read_thumb(p: Path, dimension: int = 100) -> Union[None, PILImage.Image]:
+def create_thumb(p: Path, dimension: int = 100) -> Union[None, PILImage.Image]:
     '''Read and resize an image to thumbnail with specified width.
     
     Args:
@@ -105,5 +120,30 @@ def read_thumb(p: Path, dimension: int = 100) -> Union[None, PILImage.Image]:
             img = img.resize((dimension, new_height))
         
         return img
+    except Exception:
+        return None
+
+def get_image_info(p: Path) -> Union[dict[str, int], None]:
+    '''Get detailed information about an image file
+    
+    Args:
+        p: Path to the image file
+        
+    Returns:
+        Dictionary containing:
+        - width: Image width in pixels
+        - height: Image height in pixels
+        - file_size: File size in bytes
+        Or None if the file cannot be read
+    '''
+    try:
+        with PILImage.open(p) as img:
+            width, height = img.size
+        file_size = p.stat().st_size
+        return {
+            'width': width,
+            'height': height,
+            'file_size': file_size
+        }
     except Exception:
         return None

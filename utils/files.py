@@ -11,6 +11,22 @@ try:
 except ImportError:
     TRASH_SUPPORTED = False
 
+IMAGE_FILE_SUFFIXES = [
+    '.jxl', # jpegxl
+    '.jpeg',
+    '.jpg',
+    '.png',
+    '.gif',
+    '.webp',
+    '.tiff',
+    '.psd',
+    '.raw',
+    '.bmp',
+    '.heif',
+    '.heic',
+    '.svg'
+]
+
 VIDEO_FILE_SUFFIXES = [
     '.asf',
     '.avi',
@@ -117,18 +133,20 @@ def _is_readonly_folder(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_readonly_folder:bool = True, recursive: bool = True) -> Set[Path]:
+def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_readonly_folder:bool = True, recursive: bool = True, ignore_partial_names: List[str] = [], target_suffixes: List[str] = VIDEO_FILE_SUFFIXES) -> Set[Path]:
     '''
-    Scan for video files in the specified folder.
+    Scan for files with specified suffixes in the specified folder.
     
     Args:
         folder_path: Path to scan
         ignore_hidden: Whether to ignore hidden files/folders
-        ignore_readonly_folder: Whether to ignore immediate child videos of read-only folders (since we cannot delete them)
+        ignore_readonly_folder: Whether to ignore immediate child files of read-only folders (since we cannot delete them)
         recursive: Whether to scan recursively
+        ignore_partial_names: List of partial names to filter out from results
+        target_suffixes: List of file suffixes to scan for (defaults to VIDEO_FILE_SUFFIXES)
         
     Returns:
-        Set of Path objects for found video files
+        Set of Path objects for found files
     '''
     folder = Path(folder_path).resolve()
     video_files = set()
@@ -146,8 +164,11 @@ def scan(folder_path: Union[str, Path], ignore_hidden: bool = True, ignore_reado
                 # (in other words, it needs execute perssion to access dir's contents)
                 # On Windows:
                 # child_file.is_file() will succeed.
-                if item.is_file() and item.suffix.lower() in VIDEO_FILE_SUFFIXES:
+                if item.is_file() and item.suffix.lower() in target_suffixes:
                     if ignore_readonly_folder and _is_readonly_folder(item.parent):
+                        continue
+                    # Skip if any partial name matches
+                    if ignore_partial_names and any(partial.lower() in str(item).lower() for partial in ignore_partial_names):
                         continue
                     video_files.add(item)
                 
