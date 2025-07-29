@@ -77,7 +77,7 @@ class VideoDisplayPanel(wx.Panel):
         # Delete button (far right)
         delete_btn = wx.Button(self, label="Delete")
         delete_btn.Bind(wx.EVT_BUTTON, self.on_delete)
-        sizer.Add(delete_btn, 0, wx.ALL, 5)
+        sizer.Add(delete_btn, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, 5)
         
         self.SetSizer(sizer)
     
