@@ -1,3 +1,6 @@
+import random
+import string
+
 def seconds_to_str(total_seconds: int) -> str:
     ''' Convert time in seconds to HH:MM:SS format '''
     hours = int(total_seconds // 3600)
@@ -27,3 +30,7 @@ def size_to_str(total_bytes: int) -> str:
     else:
         v = total_bytes / one_tb
         return f'{v:4.1f}TB'
+
+def generate_random_string(length=7):
+    """Generate a random alphanumeric string of given length"""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

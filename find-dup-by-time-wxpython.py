@@ -12,7 +12,7 @@ import wx.lib.scrolledpanel as scrolled
 from utils.files import scan, sort_path_naturally, safe_remove
 from utils.ffprobe import get_video_info
 from utils.ffmpeg import screenshot
-from utils.helpers import seconds_to_str, size_to_str
+from utils.helpers import seconds_to_str, size_to_str, generate_random_string
 from utils.images import read_thumb
 from utils.video_object import VideoObject
 
@@ -207,6 +207,9 @@ def main():
 
     try:
         for video_path in video_files:
+            # Generate unique random string for this video
+            rand_str = generate_random_string()
+            
             # Get video info
             width, height, duration, size, fps, codec = get_video_info(str(video_path))
             duration = int(duration)
@@ -228,7 +231,7 @@ def main():
             for sec in timestamps:
                 if sec <= duration:  # Only if video is long enough
                     timestamp_str = seconds_to_str(sec)
-                    screenshot_path = Path(temp_dir.name) / f"{video_path.stem}_{sec}s.jpg"
+                    screenshot_path = Path(temp_dir.name) / f"{video_path.stem}_{rand_str}_{sec}s.jpg"
                     screenshot(str(video_path), str(screenshot_path), timestamp_str)
                     
                     _img_obj = read_thumb(screenshot_path)
