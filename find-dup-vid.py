@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from utils.files import scan, sort_path_naturally
@@ -24,6 +25,8 @@ def main():
                        help='Disable recursive directory scanning')
     parser.add_argument('--ignore-partial-names', type=str, default='',
                        help='Comma-separated list of partial names to ignore in file paths')
+    parser.add_argument('--json', type=str, default=None,
+                       help='Path to JSON file to save grouped duplicates information')
 
     args = parser.parse_args()
 
@@ -143,16 +146,33 @@ def main():
     # Sort each group's videos naturally
     for group in grouped_videos:
         grouped_videos[group] = sort_path_naturally(grouped_videos[group])
+    # Prepare JSON output if requested
+    json_output = {}
 
     # Print grouped video results
     print("\nDuplicate Video Groups:")
     for group_num in sorted(grouped_videos.keys()):
         print(f"\nGroup {group_num}:")
+        
+        # Prepare group entry for JSON
+        json_group = []
+        
         for video_path in grouped_videos[group_num]:
             video_obj = video_objects[video_path]
             duration_str = seconds_to_str(video_obj.duration)
             print(f"  - {video_path} [{video_obj.width}x{video_obj.height}, {video_obj.fps} fps, {video_obj.codec}, {duration_str}]")
+            json_group.append(str(video_path))
         
+        json_output[group_num] = json_group
+
+    # Save to JSON file if requested
+    if args.json:
+        try:
+            with open(args.json, 'w', encoding='utf-8') as f:
+                json.dump(json_output, f, indent=2, ensure_ascii=False)
+            print(f"\nGroup information saved to: {args.json}")
+        except Exception as e:
+            print(f"Error saving JSON file: {e}")
 
 if __name__ == '__main__':
     main()

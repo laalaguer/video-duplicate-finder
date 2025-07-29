@@ -2,70 +2,64 @@
 
 <img src="./logo.png" width="192">
 
+**Video & Image Duplicate Finder** is an open source Python tool that identifies duplicate videos and images by analyzing visual similarity. It uses image comparison algorithms to detect duplicates even when file formats or resolutions differ.
 
-**Video Duplicate Finder** is an open source tool developed in Python 3, designed to identify duplicated video files by analyzing visual similarity. Unlike conventional duplicate detection methods that rely on file hashes or metadata, this software employs image-based comparison algorithms to detect duplicates even when the framerate, resolution parameters differ. Leveraging Python’s platform-independent architecture, the software is fully compatible with Windows, Linux, and macOS.
+Key Features:
+- Visual comparison of duplicate videos and images
+- Side-by-side preview of media thumbnails
+- One-click delete functionality
+- Detailed metadata display
 
-# GUI
+# Example
 
 <img src="./screenshot.png" width="800">
 
-# System-wide Dependency
+# Requirements
 
 1) Python 3 (>=3.10 preferred)
-2) `ffmpeg` and `ffprobe` binaries shall be present on your system. (extract video meta info and do screenshots)
+2) `ffmpeg` and `ffprobe` binaries for video processing
 
-# Library Dependency
-
-Use Python virtual env to install the dependencies in isolation.
+# Install
 
 ```bash
-# Install
-cd video-duplicate-finder/
+# Create virtual environment and install dependencies
 python3 -m venv .env
 source .env/bin/activate && pip3 install -r requirements.txt
 ```
 
 or
 
-```
-# Install
+```bash
+# Using Makefile
 make dep
 ```
 
 # Use
 
-## Command Line Interface (find-dup.py)
+## Video Duplicates
 
+### Command Line
 ```bash
-# Basic scan (just preview duplicates)
-python3 find-dup.py /path/to/your/video/folder
+python3 find-dup-vid.py /path/to/videos
 ```
 
-## GUI (find-dup-wxpython.py)
-
+### GUI
 ```bash
-# Launch the wxPython GUI
-python3 find-dup-wxpython.py /path/to/your/video/folder
+python3 find-dup-vid-wxpython.py /path/to/videos
 ```
 
-The wxPython GUI provides:
-- Visual comparison of duplicate videos
-- Side-by-side preview of video thumbnails
-- One-click delete functionality
-- Detailed video metadata display
- 
-# Methodology
+## Image Duplicates
 
-Similar videos share some similar properties:
-1) Resolution
-2) Duration
-3) Visually similar screenshots on specific time points.
+### Command Line
+```bash
+python3 find-dup-img.py /path/to/images
+```
 
-This tool will capture screenshots and group similar videos, order them by resolution (desc).
+### GUI
+```bash
+python3 find-dup-img-wxpython.py /path/to/images
+```
 
+# License
 
-# Buy Me a Coffee
-
-No, I am kidding. With AI's help for the GUI interface, it took me only 1.5 days to finish the initial release version.
-
-Feel free to use, update and fork the software.
+Open source - feel free to use, modify and distribute.
