@@ -14,6 +14,7 @@ from utils.images import HashableImage, HashComputer, create_thumb, get_image_in
 from utils.image_compare import ImageComparisonObject, mark_groups, sort_images
 from utils.image_object import ImageObject
 from utils.safe_counter import SafeCounter
+from utils.helpers import size_to_str
 
 # Custom event for image deletion
 ImageDeleteEvent, IMAGE_EVT_DELETE = wx.lib.newevent.NewEvent()
@@ -53,7 +54,7 @@ class ImageDisplayPanel(wx.Panel):
         info_sizer = wx.BoxSizer(wx.VERTICAL)
         info_labels = [
             (f"{image_object.width}x{image_object.height}", 'resolution'),
-            (f"Size: {image_object.size}", 'size')
+            (f"Size: {size_to_str(int(image_object.size))}", 'size')
         ]
         
         for text, prop in info_labels:
