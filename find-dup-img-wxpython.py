@@ -17,7 +17,7 @@ from utils.safe_counter import SafeCounter
 from utils.helpers import size_to_str
 
 # Delay constants (in milliseconds)
-WINDOW_OPEN_DELAY = 500  # 0.5 seconds
+WINDOW_OPEN_DELAY = 100  # 0.1 seconds
 WINDOW_CLOSE_DELAY = 500  # 0.5 seconds
 
 # Custom event for image deletion
