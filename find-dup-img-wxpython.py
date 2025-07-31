@@ -16,6 +16,10 @@ from utils.image_object import ImageObject
 from utils.safe_counter import SafeCounter
 from utils.helpers import size_to_str
 
+# Delay constants (in milliseconds)
+WINDOW_OPEN_DELAY = 500  # 0.5 seconds
+WINDOW_CLOSE_DELAY = 500  # 0.5 seconds
+
 # Custom event for image deletion
 ImageDeleteEvent, IMAGE_EVT_DELETE = wx.lib.newevent.NewEvent()
 
@@ -115,7 +119,7 @@ class GroupWindow(wx.Frame):
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.AddStretchSpacer()
         close_btn = wx.Button(top_panel, label="Close group")
-        close_btn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
+        close_btn.Bind(wx.EVT_BUTTON, lambda e: wx.CallLater(WINDOW_CLOSE_DELAY, self.Close))
         top_sizer.Add(close_btn, 0, wx.ALL|wx.TOP|wx.BOTTOM, 10)
         top_sizer.AddStretchSpacer()
         top_panel.SetSizer(top_sizer)
@@ -161,8 +165,8 @@ class GroupWindow(wx.Frame):
         self.Bind(IMAGE_EVT_DELETE, self.on_image_deleted)
         
         self.SetSizer(main_sizer)
-        self.Show()
-        self.Raise()  # Bring window to front
+        wx.CallLater(WINDOW_OPEN_DELAY, self.Show)
+        wx.CallLater(WINDOW_OPEN_DELAY + 100, self.Raise)  # Bring window to front
         self.SetFocus()  # Force focus
         self.RequestUserAttention()  # Ensure window gets attention
     
