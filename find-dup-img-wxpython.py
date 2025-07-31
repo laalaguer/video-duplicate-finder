@@ -27,6 +27,7 @@ class ImageDisplayPanel(wx.Panel):
     ''' Entry / item for displaying the image and details '''
     def __init__(self, parent, image_object, image, property_diffs=None):
         wx.Panel.__init__(self, parent, style=wx.BORDER_THEME)
+        self.SetMinSize((-1, 150))  # Minimum height of 150px, flexible width
         
         self.image_object = image_object
         self.image = image
