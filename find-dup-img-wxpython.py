@@ -36,7 +36,20 @@ class ImageDisplayPanel(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         # Image section (left)
-        bitmap = wx.Bitmap.FromBuffer(image.width, image.height, image.tobytes())
+        try:
+            bitmap = wx.Bitmap.FromBuffer(image.width, image.height, image.tobytes())
+        except Exception as e:
+            print(f"Error creating bitmap for {self.image_object.file_path}: {e}")
+            # Create a fallback grey bitmap
+            fallback_width = max(100, image.width) if hasattr(image, 'width') else 100
+            fallback_height = max(100, image.height) if hasattr(image, 'height') else 100
+            bitmap = wx.Bitmap(fallback_width, fallback_height)
+            # Fill with grey color
+            dc = wx.MemoryDC(bitmap)
+            dc.SetBackground(wx.Brush(wx.Colour(128, 128, 128)))
+            dc.Clear()
+            dc.SelectObject(wx.NullBitmap)
+        
         static_bitmap = wx.StaticBitmap(self, wx.ID_ANY, bitmap)
         static_bitmap.SetMinSize((200, -1))  # Fixed width of 200px
         sizer.Add(static_bitmap, 0, wx.ALL, 5)
