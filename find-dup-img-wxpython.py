@@ -120,7 +120,7 @@ class GroupWindow(wx.Frame):
     def __init__(self, group_num, image_paths, image_objects, image_thumbs, total_groups=None, fast_mode=False):
         # Analyze property differences in the group
         self.property_diffs = self._analyze_property_differences(image_paths, image_objects)
-        title = f"Group {group_num}"
+        title = f"Group {group_num}/{total_groups}"
         if fast_mode:
             title += " (fast mode)"
         wx.Frame.__init__(self, None, title=title, size=(850, 800))

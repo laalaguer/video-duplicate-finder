@@ -89,7 +89,7 @@ class VideoDisplayPanel(wx.Panel):
 
 class GroupWindow(wx.Frame):
     def __init__(self, group_num, video_paths, video_objects, video_thumbs, total_groups=None):
-        wx.Frame.__init__(self, None, title=f"Group {group_num}",
+        wx.Frame.__init__(self, None, title=f"Group {group_num}/{total_groups}",
                          size=(850, 800))
         
         # Main sizer for entire window
