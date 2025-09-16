@@ -92,6 +92,7 @@ class ImageDisplayPanel(wx.Panel):
     
     def on_delete(self, event):
         safe_remove(self.image_object.file_path)
+        print(f"delete {self.image_object.file_path}")
         event.GetEventObject().Disable()
         self.Hide()
         

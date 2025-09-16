@@ -72,6 +72,7 @@ class VideoDisplayPanel(wx.Panel):
     
     def on_delete(self, event):
         safe_remove(self.video_object.file_path)
+        print(f"delete {self.video_object.file_path}")
         event.GetEventObject().Disable()
 
     def open_file_location(self, file_path):
